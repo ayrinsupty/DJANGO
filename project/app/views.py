@@ -1,6 +1,6 @@
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import render, HttpResponse, redirect
 from django.contrib.auth.models import User
-
+from django.contrib import messages
 # Create your views here.
 def index(request):
     return render(request,'index.html')
@@ -28,20 +28,27 @@ def handlesignup(request):
             confirmpassword = request.POST.get("pass2")
             # print(uname, email, password, confirmpassword)
             if password != confirmpassword:
-                return HttpResponse("Password doesn't match!")
+                messages.warning(request, "Password doesn't match!")
+                return redirect('/signup')
             
             try:    
                 if User.objects.get(username = uname):
-                    return HttpResponse("Username is not available!")
+                    messages.info(request, "Username is not available!")
+                    return redirect('/signup')
             except:
                 pass
+            
             try:    
                 if User.objects.get(email = email):
-                    return HttpResponse("Email already exists!")
+                    messages.info(request, "Email already exists!")
+                    return redirect('/signup')
             except:
                 pass
             
             myuser = User.objects.create_user(uname, email, password)
             myuser.save()
-            return HttpResponse("Signed up successfully!")
+            
+            messages.success(request, "Signed up successfully! Please log in!")
+            return redirect('/login')
+            
         return render(request,'signup.html')
